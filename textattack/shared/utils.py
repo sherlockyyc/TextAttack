@@ -134,7 +134,7 @@ def color(text, color=None, method=None):
     if method is None:
         return text
     if method == 'html':
-        return f'<font color = {color}>{text}</font>'
+        return f'<font color = {color}><b>{text}</b></font>'
     elif method == 'stdout':
         if color == 'green':
             color = ANSI_ESCAPE_CODES.OKGREEN

@@ -1,9 +1,3 @@
 Flask>=1.0
 numpy
-
-# Download TextAttack from source
-<<<<<<< HEAD
--e git+https://github.com/UVA-MachineLearningBioinformatics/TextAttack@327844db5b7add9d9e9226a64ed17ecd21afac5d#egg=TextAttack
-=======
--e git+https://github.com/UVA-MachineLearningBioinformatics/TextAttack@e89dc1cb4f0c42b93c8013123741bd8443e9060c#egg=TextAttack
->>>>>>> temp edit requirements.txt for local dev
+fuzzywuzzy

@@ -9,13 +9,8 @@ scipy
 sentence_transformers
 spacy
 torch
-<<<<<<< HEAD
 transformers>=2.5.1
 tensorflow-gpu>=2
-=======
-transformers>=2.0.0
-tensorflow
->>>>>>> temp edit requirements.txt for local dev
 tensorflow_hub
 terminaltables
 tqdm

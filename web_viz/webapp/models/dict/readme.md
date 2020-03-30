@@ -1,1 +1,0 @@
-Dictionary files. Used in the interactive attack.
