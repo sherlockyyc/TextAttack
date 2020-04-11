@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
     <meta name="description" content="">
-    <meta name="author" content="Jeffrey Yoo (QData group at UVA)">
+    <meta name="author" content="Jeffrey Yoo (@QDataLab in University of Virginia)">
     <!-- <link rel="icon" href="../../favicon.ico"> -->
     <title>TextAttack Webapp Demo</title>
         <!-- Bootstrap core CSS -->
@@ -65,7 +65,7 @@
 
       <div class="row">
         <!-- Column 1: Options-->
-        <div class="col-md-8">
+        <div class="col-md-5">
           <div class="card">
             <div class="card-body">
               <h4 class="card-title"> Options </h4>
@@ -138,95 +138,59 @@
           </div>
         </div>
 
-        <!-- Default display -->
-        <div class="col-md-8">
+
+        <!-- Result display -->
+        <div class="col-md-7">
 
           <!-- Default display -->
-          <div id="default-display" class="card" style="height: 38.5rem; display: "";">
+          <div id="default-display" class="card" style="height: 38rem; display: "";">
             <div class="card-body">
                 <div id="loading-display" style="text-align: center; display: none;">
                   <br></br> <br></br> <br></br>
                   <div class="loader"></div> 
-                  <h5 style="color: #696966;">Generated Attacking input...
+                  <h5 style="color: #696966;">
+                    <strong>Generated Attacking input...
                   </strong></h5>
                 </div>
             </div>
           </div>
 
-          <!-- Attack result display -->
-          <div id="result-display" class="card" style="height: auto; display: none;">
+          <!-- show orginal result display -->
+          <div id="result-display" class="card"  style="height: 38rem; display: none;">
             <div class="card-body">
+
               <div id="original_input_display" class="row">
                 <h5 style="margin-right: 3px;"> Original Label: </h5>
                 <div style="font-size:20px; margin-top: -2.5px; margin-right:6px;" id="original_label"> Positive</div>
-                <h5 style="width:100%;">Original Input</h5>
-                <div id="original_text"></div>
+                <h5 style="width:100%;">Original Input:</h5>
+                <div id="original_text"></div> 
+
+                <!-- BELOW ADDED BY QYJ / For visualization -->
+                <br><br><h5 style="width:100%;">Original Score:</h5>
+                <p class="text-center" id="original_score"></p>
+                <div id="original_score"></div>
               </div>
 
-              <br></br>
+              <br><br><hr><br>
+
               <div id="attacked_input_display" class="row">
                 <h5 style="margin-right: 3px;"> Perturbed Label: </h5>
                 <div style="font-size:20px; margin-top: -2.5px; margin-right:6px;" id="perturbed_label"> Positive</div>
-                <h5 style="width:100%;">Perturbed Input</h5>
-
+                <br><h5 style="width:100%;">Perturbed Input:</h5>
                 <div id="perturbed_text"></div>
+
+                <!-- BELOW ADDED BY QYJ / For visualization -->
+                <br><br><h5 style="width:100%;">Perturbed Score: </h5>
+                <p class="text-center" id="perturbed_score"></p>
+               <div id="perturbed_score"></div>
               </div>
-            </div> <!-- end of card  -->
-          </div> <!-- end of result -->
+            </div> <!-- end of card -body -->
+          </div> <!-- end of card  --> 
+
         </div> <!-- end of col -->
-
-        <!-- BELOW ADDED BY QYJ / For visualization -->
-        <!-- Column : Data -->
-        <div class="col-md-8">
-          <div class="panel panel-default">
-            <!-- Row 1: text samples -->
-            <div class="row">
-              <div class="col-xs-6">
-                <h3 align = center>Original Sample</strong></h3>
-                <p class="text-center" id="original_text"></p>
-                <div id="original_text"></div>
-              </div> 
-              <div class="col-xs-6">
-                <h3 align = center>Adversarial Sample</strong></h3>
-                <p class="text-center" id="perturbed_text"></p>
-                <div id="perturbed_text"></div>
-              </div><!-- end of row 1 -->
-            </div> 
-
-            <!-- Row 2: Classification aka Sports, Category 1, etc ... -->
-            <div class="row">
-              <div class="col-xs-6">
-                <h3 align = center>Original Class</strong></h3>
-                <p class="text-center" id="original_label"></p>
-                <div id="original_label"></div>
-              </div>
-              <div class="col-xs-6">
-                <h3 align = center>Adversarial Class</strong></h3>
-                <p class="text-center" id="perturbed_label"></p>
-                  <div id="perturbed_label"></div>
-              </div>
-            </div> <!-- end of row 2 -->
-
-            <!-- Row 3: Plot of classification probabilities -->
-            <div class="row">
-                <div class="col-xs-6">
-                  <h3 align = center>Original Classification Output Vector</strong></h3>
-                  <p class="text-center" id="original_score"></p>
-                  <div id="orig-likelihoods"></div>
-                </div>
-                <div class="col-xs-6">
-                  <h3 align = center>Adversarial Classification Output Vector</strong></h3>
-                  <p class="text-center" id="perturbed_score"></p>
-                  <div id="perturbed_score"></div>
-                </div>
-            </div> <!-- end of row 3 -->
-          </div> <!-- end of panel -->
-        </div> <!-- end of col -->
-        <!-- ABOVE ADDED BY QYJ / For visualization -->
-
       </div> <!-- end of row -->
 
-    </div>
+    </div> <!-- end of container -->
 
     <!-- Bootstrap core JavaScript
     ================================================== -->
@@ -246,9 +210,52 @@
         document.getElementById('default-display').style.display = "";
 
       }
+
       function load_spinner_display()
       {
-        document.getElementById('loading-display').style.display="";
+        document.getElementById('loading-display').style.display ="";
+      }
+
+      function draw_score(original_v, perturbed_v)
+      {
+        // Chart layout: the settings (like margins, colors, etc ...) for the graphs in Plotly
+        var chart_layout = {
+          autosize: false,
+          height: 100,
+          margin: {
+            l: 75,
+            r: 75,
+            b: 50,
+            t: 50,
+            pad: 2
+          },
+          xaxis: {
+            tickmode: 'linear',
+          },
+          yaxis: {
+           title: 'Probability',
+           range: [0, 1],
+           showgrid: true,
+           zeroline: true,
+           showline: true,
+          },
+        };
+
+        var datax = [{
+          x: ['class1', 'class2', 'class3', 'class4', 'class5'],
+          y: original_v,
+          name: 'Original',
+          type: 'bar'
+        }];
+        Plotly.newPlot(document.getElementById('original_score'), datax, chart_layout);
+
+        var datap = [{
+          x: ['class1', 'class2', 'class3', 'class4', 'class5'],
+          y: perturbed_v,
+          name: 'Perturbed',
+          type: ''
+        }];
+        Plotly.newPlot(document.getElementById('perturbed_score'), datap, chart_layout);
       }
 
       function load_attack_result_display(result)
@@ -260,15 +267,15 @@
         if (document.getElementById('loading-display').style.display != "none") {
           document.getElementById('loading-display').style.display = "none"
         }
+
         console.log(result);
         var success = result["success"];
         if (result["success"]) {
             document.getElementById("original_label").innerHTML = result["original_label"];
             document.getElementById("perturbed_label").innerHTML = result["perturbed_label"];
-
             document.getElementById("original_text").innerHTML = result["original_text"];
             document.getElementById("perturbed_text").innerHTML = result["perturbed_text"];
-
+            draw_score(result["original_score"],result["perturbed_score"]);
         } else {
             document.getElementById("original_label").innerHTML = result["original_label"];
             document.getElementById("original_text").innerHTML = result["original_text"];
@@ -276,8 +283,8 @@
         } 
   
         document.getElementById('result-display').style.display = "";
+      };
 
-      }
 
       $(document).ready(function(){
 
@@ -302,7 +309,7 @@
                   
           })
 
-          $('input[type="text"]').on('keyup', function (e) {
+          $('input[type="text"]').on('keyup', function (e){
             if (e.keyCode === 13) {
               document.getElementById("generate_button").click();
             }
@@ -310,6 +317,8 @@
 
           $("#generate_button").click(function(){
             refresh_display();
+
+            load_spinner_display();
 
             var input_string = document.getElementById("InputString").value;
             var model = document.getElementById("model").value;

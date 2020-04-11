@@ -27,7 +27,11 @@ Installation
 
 If you choose to install this locally and not use the AWS EB link above, there are git submodules in this repository; to clone all the needed files, please clone this entire repository, then cd into the web_viz folder. 
 
-The primary requirements for this package are Python 3 with textAttack library.  The `requirements.txt` file contains a listing of the required Python packages; to install all requirements, run the following:
+The primary requirements for this web-viz package are the installation of TextAttack (Please see instructions at [TextAttack Github URL]()).  
+
+Then the `requirements.txt` file in this folder contains a listing of the required Python packages for you to run TextAttack webapp.  
+
+To install all requirements, run the following:
 
 ```
 pip3 -r install requirements.txt

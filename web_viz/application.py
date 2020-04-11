@@ -113,10 +113,10 @@ def create_app():
             print("Attack successful.")
             original_text, perturbed_text = attack_result.diff_color("html");
             original_label = label_map[attack_result.original_output];
-            original_score = 0
+            original_score = [0.1, 0.1, 0.5, 0.1, 0.1];
 
             perturbed_label = label_map[attack_result.perturbed_output];
-            perturbed_score = 0
+            perturbed_score = [0.3, 0.2, 0.2, 0.1, 0.2];
 
             num_queries = attack_result.num_queries;
 
@@ -143,5 +143,5 @@ application = create_app()
 
 # run the app.
 if __name__ == "__main__":
-    application.run(debug=DEBUG, host="0.0.0.0", port=8000)
+    application.run(debug=DEBUG, host="0.0.0.0", port=7000)
 
