@@ -143,5 +143,5 @@ application = create_app()
 
 # run the app.
 if __name__ == "__main__":
-    application.run(debug=DEBUG, host="0.0.0.0", port=9000)
+    application.run(debug=DEBUG, host="0.0.0.0", port=8000)
 
