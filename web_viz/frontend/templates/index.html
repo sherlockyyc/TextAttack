@@ -167,7 +167,6 @@
 
                 <!-- BELOW ADDED BY QYJ / For visualization -->
                 <br><br><h5 style="width:100%;">Original Score:</h5>
-                <p class="text-center" id="original_score"></p>
                 <div id="original_score"></div>
               </div>
 
@@ -181,7 +180,6 @@
 
                 <!-- BELOW ADDED BY QYJ / For visualization -->
                 <br><br><h5 style="width:100%;">Perturbed Score: </h5>
-                <p class="text-center" id="perturbed_score"></p>
                <div id="perturbed_score"></div>
               </div>
             </div> <!-- end of card -body -->
@@ -218,6 +216,10 @@
 
       function draw_score(original_v, perturbed_v, class_names)
       {
+
+        var listLength = original_v.length
+        alert(listLength + ", " +  original_v + ", " +  perturbed_v + ", " +  class_names)
+
         // Chart layout: the settings (like margins, colors, etc ...) for the graphs in Plotly
         var chart_layout = {
           autosize: false,
@@ -275,7 +277,9 @@
             document.getElementById("perturbed_label").innerHTML = result["perturbed_label"];
             document.getElementById("original_text").innerHTML = result["original_text"];
             document.getElementById("perturbed_text").innerHTML = result["perturbed_text"];
+
             draw_score(result["original_score"], result["perturbed_score"], result["out_names"]);
+
         } else {
             document.getElementById("original_label").innerHTML = result["original_label"];
             document.getElementById("original_text").innerHTML = result["original_text"];

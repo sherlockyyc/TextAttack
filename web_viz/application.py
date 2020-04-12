@@ -113,27 +113,34 @@ def create_app():
             print("Attack successful.")
             original_text, perturbed_text = attack_result.diff_color("html");
             original_label = label_map[attack_result.original_output];
-            original_score = [0.1, 0.1, 0.5, 0.1, 0.1];
+            original_score = [0.1, 0.1, 0.5, 0.1, 0.1];  #placehoder
 
             perturbed_label = label_map[attack_result.perturbed_output];
-            perturbed_score = [0.3, 0.2, 0.2, 0.1, 0.2];
+            perturbed_score = [0.3, 0.2, 0.2, 0.1, 0.2];  #placehoder
 
             num_queries = attack_result.num_queries;
-            out_names = ['c1', 'c2', 'c3', 'c4', 'c5'];
+            out_names = ['c1', 'c2', 'c3', 'c4', 'c5']; #placehoder
 
             result = {
                 "success": True,
                 "original_text": original_text,
                 "original_label": original_label,
-                "original_score": original_score,
                 "perturbed_text": perturbed_text,
                 "perturbed_label": perturbed_label,
-                "perturbed_score": perturbed_score,
                 "num_queries": num_queries, 
+
+                # ADDED by QYJ
+                "original_score": original_score,
+                "perturbed_score": perturbed_score,
                 "out_names": out_names
             }
 
-            return flask.jsonify(result)
+            resp = flask.jsonify(result)
+            resp.status_code = 200
+            print(resp)
+            return resp
+
+           # return flask.jsonify(result)
 
         else:
             return internal_error(500)
