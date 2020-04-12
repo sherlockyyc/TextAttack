@@ -171,7 +171,7 @@
                 <div id="original_score"></div>
               </div>
 
-              <br><br><hr><hr><br>
+              <br><hr><hr><br>
 
               <div id="attacked_input_display" class="row">
                 <h5 style="margin-right: 3px;"> Perturbed Label: </h5>
@@ -216,7 +216,7 @@
         document.getElementById('loading-display').style.display ="";
       }
 
-      function draw_score(original_v, perturbed_v)
+      function draw_score(original_v, perturbed_v, class_names)
       {
         // Chart layout: the settings (like margins, colors, etc ...) for the graphs in Plotly
         var chart_layout = {
@@ -242,20 +242,20 @@
         };
 
         var datax = [{
-          x: ['class1', 'class2', 'class3', 'class4', 'class5'],
+          x: class_names,
           y: original_v,
           name: 'Original',
           type: 'bar'
         }];
-        Plotly.newPlot(document.getElementById('original_score'), datax, chart_layout);
+        Plotly.newPlot(document.getElementById("original_score"), datax, chart_layout);
 
         var datap = [{
-          x: ['class1', 'class2', 'class3', 'class4', 'class5'],
+          x: class_names,
           y: perturbed_v,
           name: 'Perturbed',
-          type: ''
+          type: 'bar'
         }];
-        Plotly.newPlot(document.getElementById('perturbed_score'), datap, chart_layout);
+        Plotly.newPlot(document.getElementById("perturbed_score"), datap, chart_layout);
       }
 
       function load_attack_result_display(result)
@@ -275,7 +275,7 @@
             document.getElementById("perturbed_label").innerHTML = result["perturbed_label"];
             document.getElementById("original_text").innerHTML = result["original_text"];
             document.getElementById("perturbed_text").innerHTML = result["perturbed_text"];
-            draw_score(result["original_score"],result["perturbed_score"]);
+            draw_score(result["original_score"], result["perturbed_score"], result["out_names"]);
         } else {
             document.getElementById("original_label").innerHTML = result["original_label"];
             document.getElementById("original_text").innerHTML = result["original_text"];

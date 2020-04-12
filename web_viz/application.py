@@ -119,6 +119,7 @@ def create_app():
             perturbed_score = [0.3, 0.2, 0.2, 0.1, 0.2];
 
             num_queries = attack_result.num_queries;
+            out_names = ['c1', 'c2', 'c3', 'c4', 'c5'];
 
             result = {
                 "success": True,
@@ -128,7 +129,8 @@ def create_app():
                 "perturbed_text": perturbed_text,
                 "perturbed_label": perturbed_label,
                 "perturbed_score": perturbed_score,
-                "num_queries": num_queries
+                "num_queries": num_queries, 
+                "out_names": out_names
             }
 
             return flask.jsonify(result)
