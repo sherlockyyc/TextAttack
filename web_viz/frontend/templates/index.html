@@ -17,6 +17,7 @@
     <link href="{{ url_for('static', filename='custom.css') }}" rel="stylesheet">
     <!-- Plotly! -->
     <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
   </head>
 
   <body>
@@ -65,7 +66,7 @@
 
       <div class="row">
         <!-- Column 1: Options-->
-        <div class="col-md-5">
+        <div class="col-md-10">
           <div class="card">
             <div class="card-body">
               <h4 class="card-title"> Options </h4>
@@ -140,7 +141,7 @@
 
 
         <!-- Result display -->
-        <div class="col-md-7">
+        <div class="col-md-10">
 
           <!-- Default display -->
           <div id="default-display" class="card" style="height: 38rem; display: "";">
@@ -167,7 +168,7 @@
 
                 <!-- BELOW ADDED BY QYJ / For visualization -->
                 <br><br><h5 style="width:100%;">Original Score:</h5>
-                <div id="original_score"></div>
+                <canvas id="original_score" width="800" height="450"></canvas>
               </div>
 
               <br><hr><hr><br>
@@ -180,8 +181,16 @@
 
                 <!-- BELOW ADDED BY QYJ / For visualization -->
                 <br><br><h5 style="width:100%;">Perturbed Score: </h5>
-               <div id="perturbed_score"></div>
+                <canvas id="perturbed_score" width="800" height="450"></canvas>
               </div>
+
+              <br><hr><hr><br>
+
+              <!-- BELOW ADDED BY QYJ / For visualization -->
+              <div id="combine_display" class="row">
+              <canvas id="combine_scores" width="800" height="450"></canvas>
+              </div>
+
             </div> <!-- end of card -body -->
           </div> <!-- end of card  --> 
 
@@ -216,48 +225,88 @@
 
       function draw_score(original_v, perturbed_v, class_names)
       {
+        // Bar chart
+        new Chart(document.getElementById("combine_scores"), {
+          type: 'bar',
+          data: {
+              labels: class_names,
+              datasets: [
+                {
+                  label: "Original",
+                  backgroundColor: "#3e95cd",
+                  data: original_v
+                }, {
+                  label: "Perturbed",
+                  backgroundColor: "#8e5ea2",
+                  data: perturbed_v
+                }
+              ]
+            },          
+          options: {
+            title: {
+              display: true,
+              text: 'Predicted Score Vectors (before and after perturbation)'
+            }, 
+            scales: {
+                yAxes : [{
+                    ticks : {
+                        max : 1,    
+                        min : -0.1
+                    }
+                }]
+            }
+          }
+        }); 
+      }
 
-        var listLength = original_v.length
-        alert(listLength + ", " +  original_v + ", " +  perturbed_v + ", " +  class_names)
-
-        // Chart layout: the settings (like margins, colors, etc ...) for the graphs in Plotly
+      function draw_score_each(original_v, perturbed_v, class_names)
+      {
         var chart_layout = {
-          autosize: false,
-          height: 100,
-          margin: {
-            l: 75,
-            r: 75,
-            b: 50,
-            t: 50,
-            pad: 2
-          },
-          xaxis: {
-            tickmode: 'linear',
-          },
-          yaxis: {
-           title: 'Probability',
-           range: [0, 1],
-           showgrid: true,
-           zeroline: true,
-           showline: true,
-          },
-        };
+            title: {
+              display: true,
+              text: 'Predicted Score Vectors'
+            }, 
+            scales: {
+                yAxes : [{
+                    ticks : {
+                        max : 1,    
+                        min : -0.1
+                    }
+                }]
+            }
+        }
 
-        var datax = [{
-          x: class_names,
-          y: original_v,
-          name: 'Original',
-          type: 'bar'
-        }];
-        Plotly.newPlot(document.getElementById("original_score"), datax, chart_layout);
+        // Bar chart
+        new Chart(document.getElementById("original_score"), {
+          type: 'bar',
+          data: {
+              labels: class_names,
+              datasets: [
+                {
+                  label: "Original",
+                  backgroundColor: "#3e95cd",
+                  data: original_v
+                }
+              ]
+            },          
+          options: chart_layout
+        }); 
 
-        var datap = [{
-          x: class_names,
-          y: perturbed_v,
-          name: 'Perturbed',
-          type: 'bar'
-        }];
-        Plotly.newPlot(document.getElementById("perturbed_score"), datap, chart_layout);
+        // Bar chart
+        new Chart(document.getElementById("perturbed_score"), {
+          type: 'bar',
+          data: {
+              labels: class_names,
+              datasets: [
+                {
+                  label: "Perturbed",
+                  backgroundColor: "#8e5ea2",
+                  data: perturbed_v
+                }
+              ]
+            },          
+          options: chart_layout
+        }); 
       }
 
       function load_attack_result_display(result)
@@ -279,6 +328,7 @@
             document.getElementById("perturbed_text").innerHTML = result["perturbed_text"];
 
             draw_score(result["original_score"], result["perturbed_score"], result["out_names"]);
+            draw_score_each(result["original_score"], result["perturbed_score"], result["out_names"]);
 
         } else {
             document.getElementById("original_label").innerHTML = result["original_label"];
