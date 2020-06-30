@@ -52,38 +52,38 @@ print(attack)
 
 import torch
 torch.cuda.is_available()
-# from tqdm import tqdm
-# from textattack.loggers import CSVLogger
-# from collections import deque
-# worklist = deque(range(0, 10))
-# results_iterable = attack.attack_dataset(AGNews(), indices=worklist)
-# # results_iterable = attack.attack_dataset(AGNews())
-# results = []
+from tqdm import tqdm
+from textattack.loggers import CSVLogger
+from collections import deque
+worklist = deque(range(0, 10))
+results_iterable = attack.attack_dataset(AGNews(), indices=worklist)
+# results_iterable = attack.attack_dataset(AGNews())
+results = []
 
-# logger = CSVLogger(color_method='html')
+logger = CSVLogger(color_method='html')
 
-# for result in tqdm(results_iterable, total=10):
-#     logger.log_attack_result(result)
-#     results.append(result)
+for result in tqdm(results_iterable, total=10):
+    logger.log_attack_result(result)
+    results.append(result)
 
-# # import pandas as pd
-# # pd.options.display.max_colwidth = 480
+# import pandas as pd
+# pd.options.display.max_colwidth = 480
 
-# for j, result in enumerate(results):
-#     print(j)
-#     print("ori: ", result.original_result.attacked_text)
-#     print("adv: ", result.perturbed_result.attacked_text)
+for j, result in enumerate(results):
+    print(j)
+    print("ori: ", result.original_result.attacked_text)
+    print("adv: ", result.perturbed_result.attacked_text)
 
-# # from IPython.core.display import display, HTML
-# # display(HTML(logger.df[['original_text', 'perturbed_text']].to_html(escape=False)))
-# # logger.df[['original_text', 'perturbed_text']]
-
-
-
-# sentence = 'Jack Black starred in the 2003 film classic "School of Rock".'
-# print(get_entities(sentence))
-# sentence = ('In 2017, star quarterback Tom Brady led the Patriots to the Super Bowl, but lost to the Philadelphia Eagles.')
+# from IPython.core.display import display, HTML
+# display(HTML(logger.df[['original_text', 'perturbed_text']].to_html(escape=False)))
+# logger.df[['original_text', 'perturbed_text']]
 
 
-# named_entities = [entity for entity in entities if isinstance(entity, nltk.tree.Tree)]
-# print(named_entities)
+
+sentence = 'Jack Black starred in the 2003 film classic "School of Rock".'
+print(get_entities(sentence))
+sentence = ('In 2017, star quarterback Tom Brady led the Patriots to the Super Bowl, but lost to the Philadelphia Eagles.')
+
+
+named_entities = [entity for entity in entities if isinstance(entity, nltk.tree.Tree)]
+print(named_entities)

@@ -16,7 +16,7 @@ from textattack.shared.validators import transformation_consists_of_word_swaps
 
 class ImprovedGeneticAlgorithm(SearchMethod):
     """
-    Attacks a model with word substiutitions using a genetic algorithm.
+    Attacks a model with word substiutitions using an improved genetic algorithm.
 
     Args:
         pop_size (:obj:`int`, optional): The population size. Defauls to 20. 
@@ -24,59 +24,69 @@ class ImprovedGeneticAlgorithm(SearchMethod):
     """
 
     def __init__(
-        self, max_pop_size=20, max_iters=50, give_up_if_no_improvement=False
+        self, pop_size=60, max_iters=20, temp=0.3, give_up_if_no_improvement=False
     ):
         self.max_iters = max_iters
-        self.max_pop_size = max_pop_size
+        self.pop_size = pop_size
+        self.temp = temp
         self.give_up_if_no_improvement = give_up_if_no_improvement
         self.search_over = False
 
-    def _replace_at_index(self, pop_member, idx):
+    def _replace_at_index(self, attacked_text, idx, top_n=2):
         """
-        Select the best replacement for word at position (idx) 
-        in (pop_member) to maximize score.
+        Select the (top_n) best replacement for word at position (idx) 
+        in (attacked_text) to maximize score.
 
         Args:
-            pop_member: The population member being perturbed.
+            attacked_text: The text being perturbed.
             idx: The index at which to replace a word.
 
         Returns:
-            Whether a replacement which increased the score was found.
+            The perturbed texts.
         """
+        perturbed_texts = []
         transformations = self.get_transformations(
-            pop_member.attacked_text,
+            attacked_text,
             original_text=self.original_attacked_text,
             indices_to_modify=[idx],
         )
         if not len(transformations):
-            return False
+            return perturbed_texts
         orig_result, self.search_over = self.get_goal_results(
-            [pop_member.attacked_text], self.correct_output
+            [attacked_text], self.correct_output
         )
         if self.search_over:
-            return False
+            return perturbed_texts
         new_x_results, self.search_over = self.get_goal_results(
             transformations, self.correct_output
         )
         new_x_scores = torch.Tensor([r.score for r in new_x_results])
         new_x_scores = new_x_scores - orig_result[0].score
-        if len(new_x_scores) and new_x_scores.max() > 0:
-            pop_member.attacked_text = transformations[new_x_scores.argmax()]
-            return True
-        return False
+        if len(new_x_scores):
+            top_n_best_index = np.argpartition(new_x_scores, -top_n)[-top_n:]
+            for best_index in top_n_best_index:
+                perturbed_texts.append(transformations[best_index])
+        return perturbed_texts
 
-    def _mutate(self, pop_member):
+    def _perturb(self, pop_member):
         """
         Replaces a word in pop_member that has not been modified. 
         Args:
             pop_member: The population member being perturbed.
         """
         x_len = pop_member.neighbors_len.shape[0]
+        neighbors_len = deepcopy(pop_member.neighbors_len)
+        non_zero_indices = np.sum(np.sign(pop_member.neighbors_len))
+        if non_zero_indices == 0:
+            return
         iterations = 0
-        while iterations < x_len and not self.search_over:
-            rand_idx = np.random.randint(0, x_len)
+        while iterations < non_zero_indices and not self.search_over:
+            w_select_probs = neighbors_len / np.sum(neighbors_len)
+            rand_idx = np.random.choice(x_len, 1, p=w_select_probs)[0]
             if self._replace_at_index(pop_member, rand_idx):
+                pop_member.neighbors_len[rand_idx] = 0
                 break
+            neighbors_len[rand_idx] = 0
             iterations += 1
 
     def _generate_population(self, neighbors_len, initial_result):
@@ -84,18 +94,19 @@ class ImprovedGeneticAlgorithm(SearchMethod):
         Generates a population of texts by replacing each word with its optimal synonym.
         Args:
             neighbors_len: A list of the number of candidate neighbors for each word.
-            initial_result: The result to instantiate the population with.
+            initial_result: The result to instantiate the population with
         Returns:
             The population.
         """
-        pop = []
         x_len = neighbors_len.shape[0]
+        pop = []
         for idx in range(x_len):
-            pop_member = PopulationMember(
-                self.original_attacked_text, deepcopy(neighbors_len), initial_result
-            )
-            self._replace_at_index(pop_member, idx)
-            pop.append(pop_member)
+            perturbed_texts = _replace_at_index(self.original_attacked_text, idx)
+            for perturbed_text in perturbed_texts:
+                pop_member = PopulationMember(
+                    self.perturbed_text, deepcopy(neighbors_len), initial_result
+                )
+                pop.append(pop_member)
         return pop
 
     def _crossover(self, pop_member1, pop_member2):
@@ -107,16 +118,16 @@ class ImprovedGeneticAlgorithm(SearchMethod):
         Returns:
             A population member containing the crossover.
         """
+        indices_to_replace = []
+        words_to_replace = []
         x1_text = pop_member1.attacked_text
         x2_words = pop_member2.attacked_text.words
         new_neighbors_len = deepcopy(pop_member1.neighbors_len)
-        crossover_point = np.random.randint(0, len(new_neighbors_len))
-        indices_to_replace = []
-        words_to_replace = []
-        for i in range(crossover_point, len(new_neighbors_len)):
-            indices_to_replace.append(i)
-            words_to_replace.append(x2_words[i])
-            new_neighbors_len[i] = pop_member2.neighbors_len[i]
+        for i in range(len(x1_text.words)):
+            if np.random.uniform() < 0.5:
+                indices_to_replace.append(i)
+                words_to_replace.append(x2_words[i])
+                new_neighbors_len[i] = pop_member2.neighbors_len[i]
         new_text = x1_text.replace_words_at_indices(
             indices_to_replace, words_to_replace
         )
@@ -142,6 +153,9 @@ class ImprovedGeneticAlgorithm(SearchMethod):
         neighbors_len = np.array([len(x) for x in neighbors_list])
         return neighbors_len
 
+    def _fitness(self, attacked_text, fitness_weight=0.5):
+        
+
     def _perform_search(self, initial_result):
         self.original_attacked_text = initial_result.attacked_text
         self.correct_output = initial_result.output
@@ -159,28 +173,33 @@ class ImprovedGeneticAlgorithm(SearchMethod):
             for idx, result in enumerate(pop_results):
                 pop[idx].result = pop_results[idx]
             pop = sorted(pop, key=lambda x: -x.result.score)
-            pop_size = len(pop)
-            if pop_size > self.max_pop_size:
-                pop = pop[:self.max_pop_size]
-                pop_size = self.max_pop_size
+
+            pop_scores = torch.Tensor([r.score for r in pop_results])
+            logits = ((-pop_scores) / self.temp).exp()
+            select_probs = (logits / logits.sum()).cpu().numpy()
 
             if pop[0].result.succeeded:
                 return pop[0].result
+
             if pop[0].result.score > cur_score:
                 cur_score = pop[0].result.score
             elif self.give_up_if_no_improvement:
                 break
 
             elite = [pop[0]]
-            parent1_idx = np.random.choice(pop_size, size=pop_size - 1)
-            parent2_idx = np.random.choice(pop_size, size=pop_size - 1)
+            parent1_idx = np.random.choice(
+                self.pop_size, size=self.pop_size - 1, p=select_probs
+            )
+            parent2_idx = np.random.choice(
+                self.pop_size, size=self.pop_size - 1, p=select_probs
+            )
 
             children = [
                 self._crossover(pop[parent1_idx[idx]], pop[parent2_idx[idx]])
-                for idx in range(pop_size - 1)
+                for idx in range(self.pop_size - 1)
             ]
             for c in children:
-                self._mutate(c)
+                self._perturb(c)
 
             pop = elite + children
 
@@ -193,12 +212,12 @@ class ImprovedGeneticAlgorithm(SearchMethod):
         return transformation_consists_of_word_swaps(transformation)
 
     def extra_repr_keys(self):
-        return ["max_pop_size", "max_iters", "give_up_if_no_improvement"]
+        return ["pop_size", "max_iters", "temp", "give_up_if_no_improvement"]
 
 
 class PopulationMember:
     """
-    A member of the population during the course of the improved genetic algorithm.
+    A member of the population during the course of the genetic algorithm.
     
     Args:
         attacked_text: The ``AttackedText`` of the population member.
